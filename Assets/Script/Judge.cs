@@ -18,6 +18,7 @@ using UnityEngine;
         [SerializeField] JudgeTxetMessage[] judgeMessage;
         [SerializeField] GameObject messagePrefab;
 
+        [SerializeField] float perfact;
         private ObjectPoolManager poolManager;
 
         private void Start()
@@ -35,7 +36,7 @@ using UnityEngine;
             {
                 if (notesManager.LaneNum[0] == 0)
                 {
-                    Judgement(GetABS(timer - notesManager.NotesTime[0]));
+                    Judgement(Mathf.Abs(timer - notesManager.NotesTime[0]));
                     /*               
                      計算理論判定時間與實際敲擊時間的差距（誤差絕對值），
                        並傳送給 Judgement 函數進行判斷
@@ -47,15 +48,16 @@ using UnityEngine;
             {
                 if (notesManager.LaneNum[0] == 1)
                 {
-                    Judgement(GetABS(timer - notesManager.NotesTime[0]));
-                }
+                    Judgement(Mathf.Abs(timer - notesManager.NotesTime[0]));
+                    //Judgement(GetABS(timer - notesManager.NotesTime[0]));
+            }
             }
 
             if (Input.GetKeyDown(KeyCode.J))
             {
                 if (notesManager.LaneNum[0] == 2)
                 {
-                    Judgement(GetABS(timer - notesManager.NotesTime[0]));
+                    Judgement(Mathf.Abs(timer - notesManager.NotesTime[0]));
                 }
             }
 
@@ -63,11 +65,11 @@ using UnityEngine;
             {
                 if (notesManager.LaneNum[0] == 3)
                 {
-                    Judgement(GetABS(timer - notesManager.NotesTime[0]));
+                    Judgement(Mathf.Abs(timer - notesManager.NotesTime[0]));
                 }
             }
 
-            if (notesManager.NotesObj.Count <= 0) { return; }
+            if (notesManager.NotesTime.Count <= 0) { return; }
             if (timer > notesManager.NotesTime[0] + 0.2f) //  超過應該敲擊 Note 的時間 0.2 秒還沒輸入，就視為 Miss
             {
                 Message(3);
@@ -109,35 +111,18 @@ using UnityEngine;
             }
         }
 
-        float GetABS(float num)
-        // 傳回參數的絕對值
-        {
-            if (num >= 0)
-            {
-                return num;
-            }
-            else
-            {
-                return -num;
-            }
-        }
-
-
         //  刪除已經敲擊過的 Note 資料
         void deleteData()
         {
             notesManager.NotesTime.RemoveAt(0);
             notesManager.LaneNum.RemoveAt(0);
             notesManager.NoteType.RemoveAt(0);
-            notesManager.NotesObj.RemoveAt(0);
+            //notesManager.NotesObj.RemoveAt(0);
         }
-
 
         //  顯示對應的判定 UI（Perfect / Great / Bad / Miss）
         void Message(int judge)
         {
-            /*Instantiate(MessageObj[judge], new Vector3(notesManager.LaneNum[0] - 1.5f, 0.76f, 0.15f), Quaternion.Euler(45, 0, 0))
-                .GetComponent<Canvas>().worldCamera = mainCamera;*/
             var text = poolManager.SpwanFromPool(messagePrefab.name,
                 new Vector3(notesManager.LaneNum[0] - 1.5f, 0.76f, 0.15f),
                 Quaternion.Euler(45, 0, 0)).GetComponent<JudgeText>();

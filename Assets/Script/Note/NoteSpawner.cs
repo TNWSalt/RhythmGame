@@ -37,6 +37,8 @@ public class NoteSpawner : MonoBehaviour
     [SerializeField] GameObject noteObj;// 用來放 Note 的 Prefab（預製物）
     [SerializeField] GameObject holdNoteObj;
 
+    private Data inputJson;
+
     private void Awake()
 	{
         if (instance != null) { Debug.LogError("More than one NoteSpawner!"); Destroy(gameObject); return; }
@@ -52,7 +54,8 @@ public class NoteSpawner : MonoBehaviour
 
     private void Load(string SongName)
     {
-        // 讀取 JSON 譜面檔
+        #region 
+        /*// 讀取 JSON 譜面檔
         string inputString = Resources.Load<TextAsset>(SongName).ToString();
         Data inputJson = JsonUtility.FromJson<Data>(inputString);
 
@@ -61,23 +64,35 @@ public class NoteSpawner : MonoBehaviour
 
         for (int i = 0; i < inputJson.notes.Length; i++)
         {
-            //計算每個 Note 應該出現的時間點
-            float kankaku = 60 / (inputJson.BPM * (float)inputJson.notes[i].LPB);
-            float beatSec = kankaku * (float)inputJson.notes[i].LPB;
-            float time = (beatSec * inputJson.notes[i].num / (float)inputJson.notes[i].LPB) + inputJson.offset * 0.01f;
+        //計算每個 Note 應該出現的時間點
+        float kankaku = 60 / (inputJson.BPM * (float)inputJson.notes[i].LPB);
+        float beatSec = kankaku * (float)inputJson.notes[i].LPB;
+        float time = (beatSec * inputJson.notes[i].num / (float)inputJson.notes[i].LPB) + inputJson.offset * 0.01f;
 
-            //把資料加入對應的 List
-            NotesTime.Add(time);
-            LaneNum.Add(inputJson.notes[i].block);
-            NoteType.Add(inputJson.notes[i].type);
+        //把資料加入對應的 List
+        NotesTime.Add(time);
+        LaneNum.Add(inputJson.notes[i].block);
+        NoteType.Add(inputJson.notes[i].type);
 
-            float z = NotesTime[i] * NotesSpeed;
-            //實體化 Note 物件
-            NotesObj.Add(Instantiate(noteObj, new Vector3(inputJson.notes[i].block - 1.5f, 0.55f, z), Quaternion.identity));
+        float z = NotesTime[i] * NotesSpeed;
+        //實體化 Note 物件
+        NotesObj.Add(Instantiate(noteObj, new Vector3(inputJson.notes[i].block - 1.5f, 0.55f, z), Quaternion.identity));
+        }*/
+        #endregion
+        string inputString = Resources.Load<TextAsset>(SongName).ToString();
+        inputJson = JsonUtility.FromJson<Data>(inputString);
+        noteNum = 0;
+
+        // 遞迴解析整個 notes 陣列
+        foreach (var note in inputJson.notes)
+        {
+            ParseNotes(note);
         }
+
+        Debug.Log($"Loaded {noteNum} notes");
     }
 
-    private void ParseNotes(NoteInfo note)
+	private void ParseNotes(NoteInfo note)
     {
         float kankaku = 60f / (inputJson.BPM * (float)note.LPB);
         float beatSec = kankaku * note.LPB;
@@ -94,14 +109,22 @@ public class NoteSpawner : MonoBehaviour
         NotesObj.Add(Instantiate(prefabToSpawn, new Vector3(note.block - 1.5f, 0.55f, z), Quaternion.identity));
 
         noteNum++;
-
+        
         // 若是長按，遞迴解析內層 notes
         if (note.type == 2 && note.notes != null && note.notes.Length > 0)
         {
-            foreach (var subNote in note.notes)
-            {
-                ParseNotes(subNote);
+            for (int i = 0; i < note.notes.Length; i++)
+			{
+                ParseNotes(note.notes[i]);
+                
+                Debug.Log(NotesObj.Count);
+                var holdNoteHead = NotesObj[NotesObj.Count-2];
+                holdNoteHead.GetComponent<HoldNote>().SetTail(NotesObj[NotesObj.Count-1].transform);                
             }
+            /*foreach (var subNote in note.notes)
+            {
+                ParseNotes(subNote);                
+            }*/
         }
     }
 

@@ -13,7 +13,7 @@ public class Note : MonoBehaviour
 
 	public virtual void Update()
     {
-        transform.position -= transform.forward * Time.deltaTime * noteSpeed;
+        //transform.position -= transform.forward * Time.deltaTime * noteSpeed;
     }
 
     public void SetSpeed(float speed) { noteSpeed = speed; }

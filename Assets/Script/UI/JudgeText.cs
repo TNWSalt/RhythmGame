@@ -7,8 +7,7 @@ using DG.Tweening;
 
     public class JudgeText : ObjectPool
     {
-        [SerializeField] private TextMeshProUGUI text;
-        [SerializeField] private bool autoReturn;
+        [SerializeField] private TextMeshProUGUI text;       
 
 		void Start()
         {
