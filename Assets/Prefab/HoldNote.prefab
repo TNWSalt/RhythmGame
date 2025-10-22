@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 1257686845177189336}
   - component: {fileID: 1257686845177189337}
   m_Layer: 0
-  m_Name: LongPressNote
+  m_Name: HoldNote
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -208,7 +208,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8396729b5e34bf945bcbe3a9047756c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  objectPoolName: HoldNote
   noteSpeed: 0.1
+  noteTime: 0
+  noteLaneNum: 0
   isHead: 0
   line: {fileID: 1257686845177189336}
   tailTransform: {fileID: 0}

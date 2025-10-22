@@ -7,7 +7,6 @@ public class Light : MonoBehaviour
     [SerializeField] private KeyCode key;
     [SerializeField] private Material mat;
 
-    private float alpha = 0f;
     private Coroutine flashCoroutine;
 
     void Start()
@@ -36,9 +35,9 @@ public class Light : MonoBehaviour
 
     private IEnumerator Flash()
     {
-        SetAlpha(1f); // 先設為完全不透明
+        SetAlpha(1f);
 
-        float duration = 0.2f; // 閃爍持續時間（秒）
+        float duration = 0.2f;
         float elapsed = 0f;
 
         while (elapsed < duration)
@@ -49,7 +48,7 @@ public class Light : MonoBehaviour
             yield return null;
         }
 
-        SetAlpha(0f); // 確保最後是完全透明
+        SetAlpha(0f);
         flashCoroutine = null;
     }
 

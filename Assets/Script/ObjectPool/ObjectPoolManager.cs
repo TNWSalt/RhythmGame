@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class ObjectPoolManager : MonoBehaviour
 {
-	[Header("ObjectPoolName"), SerializeField]
-	private TextAsset hint;
-
 	public Dictionary<string, Queue<GameObject>> poolDicionary;
 	public List<Pool> poolsList;
 
@@ -18,7 +15,7 @@ public class ObjectPoolManager : MonoBehaviour
 	{
 		if (instance != null)
 		{
-			//Debug.LogWarning("Found more than one ObjectPoolManager");
+			Debug.LogWarning("Found more than one ObjectPoolManager");
 			Destroy(gameObject);
 			return;
 		}
@@ -153,7 +150,7 @@ public class ObjectPoolManager : MonoBehaviour
 	{
 		if (!poolDicionary.ContainsKey(tag))
 		{
-			Debug.LogWarning("Pool with tag" + tag + "dosen't exist");
+			Debug.LogWarning("Pool with tag " + tag + "dosen't exist");
 			return;
 		}
 

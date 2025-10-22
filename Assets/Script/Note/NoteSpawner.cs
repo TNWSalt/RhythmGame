@@ -22,21 +22,38 @@ public class NoteInfo
     public NoteInfo[] notes;
 }
 
+
+[Serializable]
+public class NoteData
+{
+    public NoteInfo note;
+    public float time;
+}
+
 public class NoteSpawner : MonoBehaviour
 {
     public static NoteSpawner instance;
     public static NoteSpawner GetInstance() { return instance; }
 
-    public int noteNum;// Note 總數    
-    [SerializeField] private string songName;// 歌曲名稱    
+    [SerializeField] private string songName;// 歌曲名稱
+    [SerializeField] private int noteNum;// Note 總數    
+    [SerializeField] private float notesSpeed;// Note 的移動速度
+    [SerializeField] private float spawnLeadTime = 2f;
+
+    [Space(10)]
     public List<int> LaneNum = new List<int>();//每個 Note 的軌道編號    
     public List<int> NoteType = new List<int>();//每個 Note 的種類   
     public List<float> NotesTime = new List<float>(); // 每個 Note 與判定線重合的時間（秒）    
-    public List<GameObject> NotesObj = new List<GameObject>();//用來儲存實體化出來的 Note 物件    
-    [SerializeField] private float NotesSpeed;// Note 的移動速度    
+    public List<GameObject> NotesObj = new List<GameObject>();//用來儲存實體化出來的 Note 物件                                                                  
+    
+
+    [Header("Prefab")]
     [SerializeField] GameObject noteObj;// 用來放 Note 的 Prefab（預製物）
     [SerializeField] GameObject holdNoteObj;
 
+    private float currentTime;
+    private bool isPlaying;
+    [SerializeField] private Queue<NoteData> upcomingNotes = new Queue<NoteData>();
     private Data inputJson;
 
     private void Awake()
@@ -46,13 +63,39 @@ public class NoteSpawner : MonoBehaviour
         instance = this;    
 	}
 
-	void OnEnable()
-    {
+	private void Start()
+	{
         noteNum = 0;
         Load(songName);
+        isPlaying = true;
+        currentTime = 0;
+        NotesTime.Clear();
+        LaneNum.Clear();
+        NoteType.Clear();
     }
 
-    private void Load(string SongName)
+	private void Update()
+	{
+        if (!isPlaying) { return; }
+
+        currentTime = Judge.GetInstance().GetCurrentTime();
+
+        while (upcomingNotes.Count > 0)
+        {
+            var noteData = upcomingNotes.Peek(); // 只看第一個
+            if (noteData.time - currentTime <= spawnLeadTime)
+            {
+                SpawnNote(noteData.note, noteData.time);
+                upcomingNotes.Dequeue(); // 從佇列中移除
+            }
+            else
+            {
+                break; // 還沒到時間，後面的也一定還沒到
+            }
+        }
+    }
+
+	private void Load(string SongName)
     {
         #region 
         /*// 讀取 JSON 譜面檔
@@ -98,39 +141,68 @@ public class NoteSpawner : MonoBehaviour
         float beatSec = kankaku * note.LPB;
         float time = (beatSec * note.num / (float)note.LPB) + inputJson.offset * 0.01f;
 
+        upcomingNotes.Enqueue(new NoteData { note = note, time = time });
+        noteNum++;
+
+        if (note.type == 2 && note.notes != null && note.notes.Length > 0)
+        {
+            foreach (var subNote in note.notes)
+            {
+                ParseNotes(subNote);
+            }
+        }
+    }
+
+    private void SpawnNote(NoteInfo note, float time) 
+    {
         NotesTime.Add(time);
         LaneNum.Add(note.block);
         NoteType.Add(note.type);
 
-        float z = time * NotesSpeed;
+        float z = spawnLeadTime * notesSpeed;
 
         // 根據 type 生成不同物件
-        GameObject prefabToSpawn = (note.type == 2) ? holdNoteObj : noteObj;
-        NotesObj.Add(Instantiate(prefabToSpawn, new Vector3(note.block - 1.5f, 0.55f, z), Quaternion.identity));
+        //GameObject prefabToSpawn = (note.type == 2) ? holdNoteObj : noteObj;
+        string prefabToSpawn = "Note";
+        switch (note.type)
+        {
+            case 1:
+                prefabToSpawn = "Note";
+                break;
+
+            case 2:
+                prefabToSpawn = "HoldNote";
+                break;
+        }
+        var noteScript = ObjectPoolManager.GetInstance().
+            SpwanFromPool(prefabToSpawn, new Vector3(note.block - 1.5f, 0.55f, z), Quaternion.identity);
+        Debug.Log(noteScript);
+        NotesObj.Add(noteScript);
+        noteScript.GetComponent<Note>().InitNote(notesSpeed, time, note.block);
 
         noteNum++;
-        
-        // 若是長按，遞迴解析內層 notes
+
         if (note.type == 2 && note.notes != null && note.notes.Length > 0)
         {
-            for (int i = 0; i < note.notes.Length; i++)
-			{
-                ParseNotes(note.notes[i]);
-                
-                Debug.Log(NotesObj.Count);
-                var holdNoteHead = NotesObj[NotesObj.Count-2];
-                holdNoteHead.GetComponent<HoldNote>().SetTail(NotesObj[NotesObj.Count-1].transform);                
-            }
-            /*foreach (var subNote in note.notes)
-            {
-                ParseNotes(subNote);                
-            }*/
+            var tail = note.notes[0];
+
+            float tailKankaku = 60f / (inputJson.BPM * (float)tail.LPB);
+            float tailTime = (tailKankaku * tail.num / (float)tail.LPB) + inputJson.offset * 0.01f;
+            float tailZ = tailTime * notesSpeed;
+
+            var tailScript = ObjectPoolManager.GetInstance().
+                SpwanFromPool("HoldNote", new Vector3(tail.block - 1.5f, 0.55f, tailZ), Quaternion.identity);
+            NotesObj.Add(tailScript);
+
+            tailScript.GetComponent<Note>().InitNote(notesSpeed, tailTime, tail.block);
+
+            noteScript.GetComponent<HoldNote>().SetTail(tailScript.transform);
         }
     }
 
     public float GetNoteSpeed() 
     {
-        return NotesSpeed;
+        return notesSpeed;
     }
 
     public void SetSongName(string name) 

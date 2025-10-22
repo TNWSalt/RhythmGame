@@ -2,130 +2,83 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-    [Serializable]
-    public class JudgeTxetMessage
+[Serializable]
+public class JudgeTxetMessage
+{
+public string judgeText;
+public Color textColor;
+}
+
+public class Judge : MonoBehaviour
+{
+    public static Judge instance;
+    public static Judge GetInstance() { return instance; }
+
+    [SerializeField] private int combo, maxCombo;
+    [SerializeField] float timer;
+    [SerializeField] JudgeTxetMessage[] judgeMessage;
+    [SerializeField] GameObject messagePrefab;
+    private ObjectPoolManager poolManager;
+    [SerializeField] private List<Note> pendingNotes;
+
+	private void Awake()
+	{
+        if (instance != null) { return; }
+        instance = this;
+	}
+
+	private void Start()
     {
-        public string judgeText;
-        public Color textColor;
+        poolManager = ObjectPoolManager.GetInstance();
+        timer = 0;
     }
 
-    public class Judge : MonoBehaviour
+    void Update()
     {
-        //[SerializeField] private GameObject[] MessageObj;
-        [SerializeField] NoteSpawner notesManager;
-        //[SerializeField] Camera mainCamera;
-        [SerializeField] float timer;
-        [SerializeField] JudgeTxetMessage[] judgeMessage;
-        [SerializeField] GameObject messagePrefab;
+        timer += Time.deltaTime;        
+    }
+    
+    //  顯示對應的判定 UI（Perfect / Great / Bad / Miss）
+    public void Message(int judgeResult, int noteLaneNum)
+    {
+        var text = poolManager.SpwanFromPool(messagePrefab.name,
+            new Vector3(noteLaneNum - 1.5f, 0.76f, 0.15f),
+            Quaternion.Euler(45, 0, 0)).GetComponent<JudgeText>();
+        text.SetText(judgeMessage[judgeResult]);
+    }
 
-        [SerializeField] float perfact;
-        private ObjectPoolManager poolManager;
+    public void AddPendingNotes(Note note)
+    {
+        pendingNotes.Add(note);
+    }
 
-        private void Start()
+    public void RemovePendingNotes(Note note)
+    {
+        pendingNotes.Remove(note);
+    }
+
+    public void JudgementNote(int laneNum, bool isHolding) 
+    {
+		foreach (var note in pendingNotes)
+		{
+            if (note.GetLaneNumber() == laneNum) 
+            {
+                int result = note.Judgement(timer, isHolding);
+                Message(result, note.GetLaneNumber());
+                CalculateCombo(result);
+            }
+		}
+    }
+
+    public void CalculateCombo(int result) 
+    {
+        if (result >= 2) { combo = 0; }
+        else
         {
-            notesManager = NoteSpawner.GetInstance();
-            poolManager = ObjectPoolManager.GetInstance();
-            timer = 0;
-        }
-
-        void Update()
-        {
-            timer += Time.deltaTime;
-            if (notesManager.LaneNum.Count <= 0) { return; }
-            if (Input.GetKeyDown(KeyCode.D))
-            {
-                if (notesManager.LaneNum[0] == 0)
-                {
-                    Judgement(Mathf.Abs(timer - notesManager.NotesTime[0]));
-                    /*               
-                     計算理論判定時間與實際敲擊時間的差距（誤差絕對值），
-                       並傳送給 Judgement 函數進行判斷
-                    */
-                }
-            }
-
-            if (Input.GetKeyDown(KeyCode.F))
-            {
-                if (notesManager.LaneNum[0] == 1)
-                {
-                    Judgement(Mathf.Abs(timer - notesManager.NotesTime[0]));
-                    //Judgement(GetABS(timer - notesManager.NotesTime[0]));
-            }
-            }
-
-            if (Input.GetKeyDown(KeyCode.J))
-            {
-                if (notesManager.LaneNum[0] == 2)
-                {
-                    Judgement(Mathf.Abs(timer - notesManager.NotesTime[0]));
-                }
-            }
-
-            if (Input.GetKeyDown(KeyCode.K))
-            {
-                if (notesManager.LaneNum[0] == 3)
-                {
-                    Judgement(Mathf.Abs(timer - notesManager.NotesTime[0]));
-                }
-            }
-
-            if (notesManager.NotesTime.Count <= 0) { return; }
-            if (timer > notesManager.NotesTime[0] + 0.2f) //  超過應該敲擊 Note 的時間 0.2 秒還沒輸入，就視為 Miss
-            {
-                Message(3);
-                deleteData();
-                Debug.Log("Miss");
-                //  Miss 判定
-            }
-        }
-
-        void Judgement(float timeLag)
-        {
-            if (timeLag <= 0.10)
-
-            // 若誤差在 0.1 秒以內 Perfect
-            {
-                Debug.Log("Perfect");
-                Message(0);
-                deleteData();
-            }
-            else
-            {
-                if (timeLag <= 0.15)
-                // 誤差在 0.15 秒以內  Great
-                {
-                    Debug.Log("Great");
-                    Message(1);
-                    deleteData();
-                }
-                else
-                {
-                    if (timeLag <= 0.20)
-                    // 誤差在 0.2 秒以內  Bad
-                    {
-                        Debug.Log("Bad");
-                        Message(2);
-                        deleteData();
-                    }
-                }
-            }
-        }
-
-        //  刪除已經敲擊過的 Note 資料
-        void deleteData()
-        {
-            notesManager.NotesTime.RemoveAt(0);
-            notesManager.LaneNum.RemoveAt(0);
-            notesManager.NoteType.RemoveAt(0);
-            //notesManager.NotesObj.RemoveAt(0);
-        }
-
-        //  顯示對應的判定 UI（Perfect / Great / Bad / Miss）
-        void Message(int judge)
-        {
-            var text = poolManager.SpwanFromPool(messagePrefab.name,
-                new Vector3(notesManager.LaneNum[0] - 1.5f, 0.76f, 0.15f),
-                Quaternion.Euler(45, 0, 0)).GetComponent<JudgeText>();
-            text.SetText(judgeMessage[judge]);
+            combo++;
+            if (combo >= maxCombo) { maxCombo = combo; }
         }
     }
+
+    public float GetCurrentTime() { return timer; }
+}
