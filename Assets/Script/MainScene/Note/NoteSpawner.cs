@@ -162,8 +162,9 @@ public class NoteSpawner : MonoBehaviour
         NotesTime.Add(time);
         LaneNum.Add(note.block);
         NoteType.Add(note.type);
-
+       
         float z = spawnLeadTime * notesSpeed;
+        if (time <= spawnLeadTime) { z = time * notesSpeed; }
 
         // 根據 type 生成不同物件
         string prefabToSpawn = "Note";
