@@ -1,25 +1,26 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
 public class Data
 {
-    public string name;  // ¦±¦W
-    public int maxBlock; // ³Ì¤j­y¹D¼Æ¡]Lane ¼Æ¡^
-    public int BPM;      //  BPM¡]ºq¦±¸`«µ³t«×¡^
-    public int offset;   //  ¶}©l®É¶¡ªº°¾²¾­È
-    public NoteDefinition[] notes; //  Note¡]­µ²Å¡^¸ê°Tªº¦Cªí
+    public string name;  // æ›²å
+    public int maxBlock; // æœ€å¤§è»Œé“æ•¸ï¼ˆLane æ•¸ï¼‰
+    public int BPM;      //  BPMï¼ˆæ­Œæ›²ç¯€å¥é€Ÿåº¦ï¼‰
+    public int offset;   //  é–‹å§‹æ™‚é–“çš„åç§»å€¼
+    public NoteDefinition[] notes; //  Noteï¼ˆéŸ³ç¬¦ï¼‰è³‡è¨Šçš„åˆ—è¡¨
 }
 
 [Serializable]
 public class NoteDefinition
 {
-    public int type;  //  Note ªºÃş«¬¡]¨Ò¦p´¶³q­µ²Å¡Bªø«ö­µ²Åµ¥¡^
-    public int num;   //  ³Q©ñ¦b²Ä´X©çªº¦ì¸m
-    public int block; //  ³Q©ñ¦b­ş¤@­Ó­y¹D¡]Lane¡^
-    public int LPB;   //  ¨C¤@©ç³Q²Ó¤À¦¨´X­Óµ¥¥÷¡]tick ¼Æ¡^
+    public int type;  //  Note çš„é¡å‹ï¼ˆä¾‹å¦‚æ™®é€šéŸ³ç¬¦ã€é•·æŒ‰éŸ³ç¬¦ç­‰ï¼‰
+    public int num;   //  è¢«æ”¾åœ¨ç¬¬å¹¾æ‹çš„ä½ç½®
+    public int block; //  è¢«æ”¾åœ¨å“ªä¸€å€‹è»Œé“ï¼ˆLaneï¼‰
+    public int LPB;   //  æ¯ä¸€æ‹è¢«ç´°åˆ†æˆå¹¾å€‹ç­‰ä»½ï¼ˆtick æ•¸ï¼‰
     public NoteDefinition[] notes;
+    public int direction;
 }
 
 [Serializable]
@@ -34,25 +35,29 @@ public class NoteSpawner : MonoBehaviour
     public static NoteSpawner instance;
     public static NoteSpawner GetInstance() { return instance; }
 
-    [SerializeField] private string songName;// ºq¦±¦WºÙ
-    [SerializeField] private int noteNum;// Note Á`¼Æ    
-    [SerializeField] private float notesSpeed;// Note ªº²¾°Ê³t«×
+    [SerializeField] private string songName;// æ­Œæ›²åç¨±
+    [SerializeField] private int noteNum;// Note ç¸½æ•¸    
+    [SerializeField] private float notesSpeed;// Note çš„ç§»å‹•é€Ÿåº¦
     [SerializeField] private float spawnLeadTime = 2f;
 
     [Space(10)]
-    public List<int> LaneNum = new List<int>();//¨C­Ó Note ªº­y¹D½s¸¹    
-    public List<int> NoteType = new List<int>();//¨C­Ó Note ªººØÃş   
-    public List<float> NotesTime = new List<float>(); // ¨C­Ó Note »P§P©w½u­«¦Xªº®É¶¡¡]¬í¡^    
-    public List<GameObject> NotesObj = new List<GameObject>();//¥Î¨ÓÀx¦s¹êÅé¤Æ¥X¨Óªº Note ª«¥ó                                                                  
+    public List<int> LaneNum = new List<int>();//æ¯å€‹ Note çš„è»Œé“ç·¨è™Ÿ    
+    public List<int> NoteType = new List<int>();//æ¯å€‹ Note çš„ç¨®é¡   
+    public List<float> NotesTime = new List<float>(); // æ¯å€‹ Note èˆ‡åˆ¤å®šç·šé‡åˆçš„æ™‚é–“ï¼ˆç§’ï¼‰    
+    public List<GameObject> NotesObj = new List<GameObject>();//ç”¨ä¾†å„²å­˜å¯¦é«”åŒ–å‡ºä¾†çš„ Note ç‰©ä»¶                                                                  
     
     [Header("Prefab")]
-    [SerializeField] GameObject noteObj;// ¥Î¨Ó©ñ Note ªº Prefab¡]¹w»sª«¡^
-    [SerializeField] GameObject holdNoteObj;
+    [SerializeField] private GameObject noteObj;// ç”¨ä¾†æ”¾ Note çš„ Prefabï¼ˆé è£½ç‰©ï¼‰
+    [SerializeField] private GameObject holdNoteObj;
+    [SerializeField] private GameObject swipeNotePrefab;
 
     private float currentTime;
     private bool isPlaying;
     [SerializeField] private List<NoteEvent> upcomingNotes = new List<NoteEvent>();
     private Data inputJson;
+    private GameManager gameManager;
+    private Judge judge;
+    private ObjectPoolManager objectPool;
 
     private void Awake()
 	{
@@ -63,30 +68,38 @@ public class NoteSpawner : MonoBehaviour
 
 	private void Start()
 	{
-        songName = GameManager.GetInstance().GetSongData().musicChart.name;
+        gameManager = GameManager.GetInstance();
+        judge = Judge.GetInstance();
+        objectPool = ObjectPoolManager.GetInstance();
+        objectPool.CreatePool("SwipeNote", swipeNotePrefab, 10);
+
         noteNum = 0;
-        Load(songName);
+        if (gameManager.GetSongData() != null) 
+        { 
+            Load(gameManager.GetSongData().difficultyDatas[gameManager.GetDifficulty()].chart);
+        }
+        else { Load(songName); }
         isPlaying = true;
         currentTime = 0;
         NotesTime.Clear();
         LaneNum.Clear();
         NoteType.Clear();
-        Judge.GetInstance().CalculateTotalScore(noteNum);
+        judge.CalculateTotalScore(noteNum);
     }
 
 	private void Update()
 	{
         if (!isPlaying) { return; }
 
-        currentTime = Judge.GetInstance().GetCurrentTime();
+        currentTime = judge.timer;
 
         while (upcomingNotes.Count > 0)
         {
-            var noteData = upcomingNotes[0]; // ¬İ²Ä¤@­Ó¤¸¯À
+            var noteData = upcomingNotes[0]; // çœ‹ç¬¬ä¸€å€‹å…ƒç´ 
             if (noteData.time - currentTime <= spawnLeadTime)
             {
                 SpawnNote(noteData.note, noteData.time);
-                upcomingNotes.RemoveAt(0); // ²¾°£²Ä¤@­Ó
+                upcomingNotes.RemoveAt(0); // ç§»é™¤ç¬¬ä¸€å€‹
             }
             else
             {
@@ -95,38 +108,54 @@ public class NoteSpawner : MonoBehaviour
         }
     }
 
-	private void Load(string SongName)
+    /*private void Load(string SongName)
     {
         #region 
-        /*// Åª¨ú JSON ÃĞ­±ÀÉ
+        // è®€å– JSON è­œé¢æª”
         string inputString = Resources.Load<TextAsset>(SongName).ToString();
         Data inputJson = JsonUtility.FromJson<Data>(inputString);
 
-        //³]©w Note ªºÁ`¼Æ
+        //è¨­å®š Note çš„ç¸½æ•¸
         noteNum = inputJson.notes.Length;
 
         for (int i = 0; i < inputJson.notes.Length; i++)
         {
-        //­pºâ¨C­Ó Note À³¸Ó¥X²{ªº®É¶¡ÂI
+        //è¨ˆç®—æ¯å€‹ Note æ‡‰è©²å‡ºç¾çš„æ™‚é–“é»
         float kankaku = 60 / (inputJson.BPM * (float)inputJson.notes[i].LPB);
         float beatSec = kankaku * (float)inputJson.notes[i].LPB;
         float time = (beatSec * inputJson.notes[i].num / (float)inputJson.notes[i].LPB) + inputJson.offset * 0.01f;
 
-        //§â¸ê®Æ¥[¤J¹ïÀ³ªº List
+        //æŠŠè³‡æ–™åŠ å…¥å°æ‡‰çš„ List
         NotesTime.Add(time);
         LaneNum.Add(inputJson.notes[i].block);
         NoteType.Add(inputJson.notes[i].type);
 
         float z = NotesTime[i] * NotesSpeed;
-        //¹êÅé¤Æ Note ª«¥ó
+        //å¯¦é«”åŒ– Note ç‰©ä»¶
         NotesObj.Add(Instantiate(noteObj, new Vector3(inputJson.notes[i].block - 1.5f, 0.55f, z), Quaternion.identity));
-        }*/
+        }
         #endregion
         string inputString = Resources.Load<TextAsset>(SongName).ToString();
         inputJson = JsonUtility.FromJson<Data>(inputString);
         noteNum = 0;
 
-        // »¼°j¸ÑªR¾ã­Ó notes °}¦C
+        // éè¿´è§£ææ•´å€‹ notes é™£åˆ—
+        foreach (var note in inputJson.notes)
+        {
+            ParseNotes(note);
+        }
+
+        Debug.Log($"Loaded {noteNum} notes");
+    }*/
+
+    private void Load(string songName)
+    {
+        // è®€å– JSON è­œé¢æª”
+        string inputString = Resources.Load<TextAsset>(songName).ToString();
+        Data inputJson = JsonUtility.FromJson<Data>(inputString);
+        noteNum = 0;
+
+        // éè¿´è§£ææ•´å€‹ notes é™£åˆ—
         foreach (var note in inputJson.notes)
         {
             ParseNotes(note);
@@ -135,7 +164,22 @@ public class NoteSpawner : MonoBehaviour
         Debug.Log($"Loaded {noteNum} notes");
     }
 
-	private void ParseNotes(NoteDefinition note, bool addToUpcoming = true)
+    private void Load(TextAsset musicChart)
+    {                
+        string inputString = musicChart.ToString();
+        inputJson = JsonUtility.FromJson<Data>(inputString);
+        noteNum = 0;
+
+        // éè¿´è§£ææ•´å€‹ notes é™£åˆ—
+        foreach (var note in inputJson.notes)
+        {
+            ParseNotes(note);
+        }
+
+        Debug.Log($"Loaded {noteNum} notes");
+    }
+
+    private void ParseNotes(NoteDefinition note, bool addToUpcoming = true)
     {
         float kankaku = 60f / (inputJson.BPM * (float)note.LPB);
         float beatSec = kankaku * note.LPB;
@@ -166,7 +210,7 @@ public class NoteSpawner : MonoBehaviour
         float z = spawnLeadTime * notesSpeed;
         if (time <= spawnLeadTime) { z = time * notesSpeed; }
 
-        // ®Ú¾Ú type ¥Í¦¨¤£¦Pª«¥ó
+        // æ ¹æ“š type ç”Ÿæˆä¸åŒç‰©ä»¶
         string prefabToSpawn = "Note";
         switch (note.type)
         {
@@ -177,9 +221,11 @@ public class NoteSpawner : MonoBehaviour
             case 2:
                 prefabToSpawn = "HoldNote";
                 break;
+            case 3:
+                prefabToSpawn = "SwipeNote";
+                break;
         }
-        var noteScript = ObjectPoolManager.GetInstance().
-            SpwanFromPool(prefabToSpawn, new Vector3(note.block - 1.5f, 0.55f, z), Quaternion.identity);
+        var noteScript = objectPool.SpwanFromPool(prefabToSpawn, new Vector3(note.block - 1.5f, 0.55f, z), Quaternion.identity);
         NotesObj.Add(noteScript);
         noteScript.GetComponent<Note>().InitNote(notesSpeed, time, note.block);
 
@@ -200,9 +246,10 @@ public class NoteSpawner : MonoBehaviour
             NotesObj.Add(tailScript);
 
             tailScript.GetComponent<Note>().InitNote(notesSpeed, tailTime, tail.block);
-
             noteScript.GetComponent<HoldNote>().SetTail(tailScript.transform);
         }
+
+        if(note.type == 3) { }
     }
 
     public float GetNoteSpeed() 

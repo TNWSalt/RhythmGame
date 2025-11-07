@@ -12,12 +12,32 @@ public class SongSelectMenu : MonoBehaviour
     [SerializeField] private TextMeshProUGUI nameText;
 	[SerializeField] private RectTransform content;
 
+    [SerializeField] private DifficultySelection difficulty;
+    [SerializeField] private SwipeMenu swipeMenu;
+
     private List<SongDataGroup> items = new();
 
-    private void Start()
+    public static SongSelectMenu instance;
+    public static SongSelectMenu GetInstance() { return instance; }
+
+	private void Awake()
+	{
+        if (instance != null) { Destroy(gameObject); return; }
+        instance = this;	
+    }
+
+	private void Start()
 	{
         Populate();
-        nameText.text = songs[content.GetComponent<SwipeMenu>().GetFocuseIndex()].name;
+        nameText.text = songs[swipeMenu.currentPosIndex].name;
+
+        if (swipeMenu == null)
+        {
+            Debug.LogError("請在 SongSelectMenu 的 Inspector 中指定 SwipeMenu 物件！");
+            return;
+        }
+
+        swipeMenu.InitializeSwipeMenu();
     }
 
 	public void Update()
@@ -29,7 +49,7 @@ public class SongSelectMenu : MonoBehaviour
         }
         if (Input.GetMouseButtonUp(0)) 
         {
-            nameText.text = songs[content.GetComponent<SwipeMenu>().GetFocuseIndex()].name;
+            nameText.text = songs[swipeMenu.currentPosIndex].name;
             nameText.DOFade(1, .2f);
             nameText.rectTransform.DOMoveY(100, .2f);
             nameText.rectTransform.DOLocalMoveY(-325, .2f);
@@ -38,9 +58,11 @@ public class SongSelectMenu : MonoBehaviour
 
 	private void Populate()
     {
-        foreach (Transform child in content)
+        foreach (Transform child in content) 
+        {
             Destroy(child.gameObject);
-
+        }
+            
         items.Clear();
         for (int i = 0; i < songs.Count; i++)
         {
@@ -48,6 +70,12 @@ public class SongSelectMenu : MonoBehaviour
             item.SetData(songs[i].sprite, i, this);
             items.Add(item);
         }
+    }
+
+    public void OpenDiffcultySelection(int index) 
+    {
+        difficulty.gameObject.SetActive(true);
+        difficulty.Init(GetData(index));
     }
 
     public SongData GetData(int i) { return songs[i]; }

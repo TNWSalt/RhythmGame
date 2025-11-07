@@ -8,9 +8,12 @@ using UnityEngine.UI;
 public class SongData 
 {
 	public string name;
-	public AudioClip music;
+    public string vocal;
+    public AudioClip music;
 	public Sprite sprite;
-	public TextAsset musicChart;
+	//public TextAsset[] musicChart;
+    [TextArea] public string description;
+    public List<DifficultyData> difficultyDatas;
 }
 
 public class SongDataGroup : MonoBehaviour
@@ -30,7 +33,8 @@ public class SongDataGroup : MonoBehaviour
 
     public void ClickButton() 
     {
-        GameManager.GetInstance().SetSongData(menu.GetData(index));
-        SceneController.GetInstance().LoadNextScene();
+        //GameManager.GetInstance().SetSongData(menu.GetData(index));
+        //SceneController.GetInstance().LoadNextScene();
+        SongSelectMenu.GetInstance().OpenDiffcultySelection(index);
     }
 }

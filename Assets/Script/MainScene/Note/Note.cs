@@ -1,4 +1,4 @@
-using System.Collections;
+嚜簑sing System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,12 +6,12 @@ public class Note : MonoBehaviour, IObjectPool
 {
 	[SerializeField] protected string objectPoolName;
 	[SerializeField] protected float noteSpeed = .1f;
-	[SerializeField] protected float noteTime;
-	[SerializeField] protected int noteLaneNum;
+	public float noteTime { get; protected set; }
+	public int noteLaneNum { get; protected set; }
 	protected Judge judge;
 	protected InputManager inputManager;
 	protected bool added;
-	protected bool isFinished;
+	public bool isFinished { get; protected set; }
 
 	public virtual void OnEnable()
 	{
@@ -22,42 +22,42 @@ public class Note : MonoBehaviour, IObjectPool
 	}
 
 	public virtual void Update()
-    {
-        transform.position -= transform.forward * Time.deltaTime * noteSpeed;
+	{
+		if (PauseManager.GetInstance().isPause) { return; }
 
-		if (Mathf.Abs(judge.GetCurrentTime() - noteTime) <= .2f && !added) 
+		transform.position -= transform.forward * Time.deltaTime * noteSpeed;
+
+		if (Mathf.Abs(judge.timer - noteTime) <= .2f && !added)
 		{
-			AddToPendingNotes();			
+			AddToPendingNotes();
 		}
-		else if (judge.GetCurrentTime() > noteTime + .2f) //  超過應該敲擊 Note 的時間 0.2 秒還沒輸入，就視為 Miss
+		else if (judge.timer > noteTime + .2f)
 		{
 			Miss();
 			//isFinished = true;
 		}
 	}
 
-	public void InitNote(float speed, float time, int laneNum) 
+	public void InitNote(float speed, float time, int laneNum)
 	{
 		noteSpeed = speed;
 		noteLaneNum = laneNum;
 		noteTime = time;
 	}
 
-	public int GetLaneNumber() { return noteLaneNum; }
-
 	public virtual int Judgement(float currentTime, bool isHolding)
 	{
 		float timeLag = Mathf.Abs(currentTime - noteTime);
 		Debug.Log(timeLag);
 
-		if (timeLag >= .2f) { Debug.LogError("pendingNotes 出現>= .2f的Note"); return 4; }
+		if (timeLag >= .2f) { Debug.LogError("pendingNotes 嚙碼嚙緹>= .2f嚙踝蕭Note"); return 4; }
 		//judge.RemovePendingNotes(this);
 		isFinished = true;
 		ReturnToPool();
 
 		if (timeLag <= .1f) { return 0; }
 		else if (timeLag <= .15f) { return 1; }
-		else{ return 2; }
+		else { return 2; }
 		//else { return 3; }
 	}
 
@@ -66,21 +66,19 @@ public class Note : MonoBehaviour, IObjectPool
 		ObjectPoolManager.GetInstance().ReturnToPool(objectPoolName, gameObject);
 	}
 
-	protected void AddToPendingNotes() 
+	protected void AddToPendingNotes()
 	{
 		added = true;
 		judge.AddPendingNotes(this);
 	}
 
-	protected void Miss() 
+	protected void Miss()
 	{
-		judge.Message(3, noteLaneNum);		
+		judge.Message(3, noteLaneNum);
 		//judge.RemovePendingNotes(this);
 		judge.CalculateCombo(3);
 		isFinished = true;
-		ReturnToPool();		
+		ReturnToPool();
 		Debug.Log("Miss");
 	}
-
-	public bool IsFinished() { return isFinished; }
 }

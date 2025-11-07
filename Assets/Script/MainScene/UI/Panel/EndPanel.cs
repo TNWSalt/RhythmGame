@@ -14,8 +14,8 @@ public class EndPanel : BasePanel
 		good.text = result[1].ToString();
 		bad.text = result[2].ToString();
 		miss.text = result[3].ToString();
-		score.text = Judge.GetInstance().GetFinalScore().ToString();
-		combo.text = Judge.GetInstance().GetMaxCombo().ToString();
+		score.text = Judge.GetInstance().finalScore.ToString();
+		combo.text = Judge.GetInstance().maxCombo.ToString();
 	}
 
 	public void ClickButton() 

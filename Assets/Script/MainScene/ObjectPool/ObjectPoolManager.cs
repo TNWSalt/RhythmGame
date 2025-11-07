@@ -32,7 +32,7 @@ public class ObjectPoolManager : MonoBehaviour
 			for (int i = 0; i < pool.size; i++)
 			{
 				GameObject obj = null;
-				obj = Instantiate(pool.perfabs, pool.parent);
+				obj = Instantiate(pool.prefab, pool.parent);
 
 				obj.SetActive(false);
 
@@ -156,15 +156,34 @@ public class ObjectPoolManager : MonoBehaviour
 
 		obj.SetActive(false);
 	}
+
+	public void CreatePool(string tag, GameObject prefab, int count) 
+	{
+		var pool = new Pool(tag, prefab, count);
+		poolsList.Add(pool);
+	}
+	public void CreatePool(string tag, GameObject prefab, int count, Transform parent)
+	{
+		var pool = new Pool(tag, prefab, count, parent);
+		poolsList.Add(pool);
+	}
 }
 
 [System.Serializable]
 public class Pool
 {
 	public string tag;
-	public GameObject perfabs;
+	public GameObject prefab;
 	public int size;
 	public Transform parent;
+
+	public Pool(string tag, GameObject prefab, int size, Transform parent = null)
+	{
+		this.tag = tag;
+		this.prefab = prefab;
+		this.size = size;
+		this.parent = parent;
+	}
 }
 
 

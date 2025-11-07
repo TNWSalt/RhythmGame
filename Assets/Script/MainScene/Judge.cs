@@ -15,22 +15,26 @@ public class Judge : MonoBehaviour
     public static Judge GetInstance() { return instance; }
 
     [Header("Combo")]
-    [SerializeField] private int combo, maxCombo;
+    [SerializeField] private int combo;
+    public int maxCombo { get; private set; }
     [SerializeField] private int[] resultCount = new int[4];
 
     [Header("分數")]
     [SerializeField] private int totalScore;
     [SerializeField] private int currentScore;
-    [SerializeField] private int finalScore;
-
-    [Header("計時器")]
-    [SerializeField] float timer;
+    public int finalScore { get; private set; }
+  
     [SerializeField] JudgeTxetMessage[] judgeMessage;
-    [SerializeField] GameObject messagePrefab;
-    private ObjectPoolManager poolManager;
+    [SerializeField] GameObject messagePrefab;    
     [SerializeField] private List<Note> pendingNotes;
+    public float timer { get; private set; }
 
-	private void Awake()
+    private Note[] pendingPressNote = new Note[4];
+
+    private ObjectPoolManager poolManager;
+    private GameManager gameManager;
+
+    private void Awake()
 	{
         if (instance != null) { return; }
         instance = this;
@@ -39,6 +43,7 @@ public class Judge : MonoBehaviour
 	private void Start()
     {
         poolManager = ObjectPoolManager.GetInstance();
+        gameManager = GameManager.GetInstance();
         finalScore = 0;
         currentScore = 0;
         totalScore = 0;
@@ -47,6 +52,7 @@ public class Judge : MonoBehaviour
 
     void Update()
     {
+        if (PauseManager.GetInstance().isPause) { return; }
         timer += Time.deltaTime;        
     }
     
@@ -76,18 +82,18 @@ public class Judge : MonoBehaviour
         {
             var note = pendingNotes[i];
 
-            if (note.GetLaneNumber() != laneNum) { continue; }
+            if (note.noteLaneNum != laneNum) { continue; }
 
             int result = note.Judgement(timer, isHolding);
             Debug.Log(result);
             if (result == 4) { continue; }
             AddResult(result);
             CalculateScore(result);
-            Message(result, note.GetLaneNumber());
+            Message(result, note.noteLaneNum);
             CalculateCombo(result);
 
             // 如果音符被判定完（如 PERFECT, MISS），就移出
-            if (note.IsFinished())
+            if (note.isFinished)
             {
                 pendingNotes.RemoveAt(i);
             }
@@ -107,8 +113,6 @@ public class Judge : MonoBehaviour
         }
         FindObjectOfType<ComboText>().SetCombo(combo);
     }
-
-    public float GetCurrentTime() { return timer; }
 
     public void AddResult(int result)
     {
@@ -150,7 +154,4 @@ public class Judge : MonoBehaviour
     {
         totalScore = noteNum * 3;
     }
-
-    public int GetFinalScore() { return finalScore; }
-    public int GetMaxCombo() { return maxCombo; }
 }

@@ -8,7 +8,7 @@ public class BasePanel : MonoBehaviour
 {
     [SerializeField] protected float fadeTime = .2f;
 	[SerializeField] private KeyCode closeKey = KeyCode.Escape;
-	[SerializeField, Range(0f, 1f)] private float scale;
+	[SerializeField, Range(0f, 1f)] private float scale = 1f;
 
 	protected RectTransform rectTransform;
 	protected UIManager uIManager;

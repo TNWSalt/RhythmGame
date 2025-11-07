@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,25 +22,23 @@ public class HoldNote : Note
 
 	public override void Update()
 	{
-		float currentTime = judge.GetCurrentTime();
-
 		if (!isHolding && !startHolding)
 		{
 			transform.position -= transform.forward * Time.deltaTime * noteSpeed;
-			if (isHead) 
+			if (isHead)
 			{
-				if (Mathf.Abs(currentTime - noteTime) <= .2f && !added)
+				if (Mathf.Abs(judge.timer - noteTime) <= .2f && !added)
 				{
 					AddToPendingNotes();
 				}
-				else if (currentTime > noteTime + .2f) //  ¶W¹LÀ³¸ÓºVÀ» Note ªº®É¶¡ 0.2 ¬íÁÙ¨S¿é¤J¡A´Nµø¬° Miss
+				else if (judge.timer > noteTime + .2f) //  ï¿½Wï¿½Lï¿½ï¿½ï¿½ÓºVï¿½ï¿½ Note ï¿½ï¿½ï¿½É¶ï¿½ 0.2 ï¿½ï¿½ï¿½Ù¨Sï¿½ï¿½Jï¿½Aï¿½Nï¿½ï¿½ï¿½ï¿½ Miss
 				{
 					Miss();
 					isFinished = true;
 				}
 			}
 		}
-		else if (isHolding && startHolding) 
+		else if (isHolding && startHolding)
 		{
 			transform.position = new Vector3(transform.position.x, transform.position.y, 0);
 		}
@@ -52,7 +50,7 @@ public class HoldNote : Note
 		if (!tailJudged && tailTransform != null)
 		{
 			var tailNote = tailTransform.GetComponent<HoldNote>();
-			if (currentTime > tailNote.noteTime + .2f)
+			if (judge.timer > tailNote.noteTime + .2f)
 			{
 				judge.Message(3, noteLaneNum); // Miss
 				judge.CalculateScore(3);
@@ -77,22 +75,22 @@ public class HoldNote : Note
 
 			if (timeLag <= .1f) { return 0; }
 			else if (timeLag <= .15f) { return 1; }
-			else{ return 2; }
+			else { return 2; }
 		}
-		else 
+		else
 		{
 			isHolding = false;
 			return EndJudge();
 		}
 	}
 
-	private int EndJudge() 
-	{		
+	private int EndJudge()
+	{
 		var tailNote = tailTransform.GetComponent<HoldNote>();
-		float timeLag = Mathf.Abs(tailNote.noteTime - judge.GetCurrentTime());
+		float timeLag = Mathf.Abs(tailNote.noteTime - judge.timer);
 		Debug.Log(timeLag);
 
-		if (timeLag >= .2f) 
+		if (timeLag >= .2f)
 		{
 			judge.Message(3, noteLaneNum); // miss
 			ReturnToPool();
@@ -101,7 +99,7 @@ public class HoldNote : Note
 			isFinished = true;
 			return 3;
 		}
-		else if (timeLag <= .2f) // §P©w½d³ò¤º
+		else if (timeLag <= .2f) 
 		{
 			int result;
 			if (timeLag <= .1f) { result = 0; }
@@ -115,7 +113,7 @@ public class HoldNote : Note
 			isFinished = true;
 			return result;
 		}
-		else if (tailNote.noteTime < judge.GetCurrentTime() - .2f)
+		else if (tailNote.noteTime < judge.timer - .2f)
 		{
 			judge.Message(3, noteLaneNum); // miss
 			ReturnToPool();
@@ -130,14 +128,13 @@ public class HoldNote : Note
 		return 3;
 	}
 
-	public void SetTail(Transform tail) 
+	public void SetTail(Transform tail)
 	{
 		Debug.Log("set tail");
 		tailTransform = tail;
 		line.positionCount = 2;
-		isHead = true;				
+		isHead = true;
 	}
 
-	public float GetNoteTime() { return noteTime; }
 	public void SetIsHoldingToFalse() { isHolding = false; }
 }

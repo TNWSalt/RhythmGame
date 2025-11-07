@@ -3,7 +3,6 @@ using DG.Tweening;
 
 public class Light : MonoBehaviour
 {
-    [SerializeField] private KeyCode key;
     [SerializeField] private Material mat;
 
     private Tween flashTween;
@@ -14,18 +13,12 @@ public class Light : MonoBehaviour
         SetAlpha(0f);
     }
 
-    void Update()
+    public void Flash() 
     {
-        if (Input.GetKeyDown(key))
-        {
-            Debug.Log("Click " + key);
+        flashTween?.Kill();
 
-            // 如果有舊的 tween，先殺掉它（防止重疊）
-            flashTween?.Kill();
-
-            SetAlpha(1f);
-            flashTween = mat.DOFade(0f, 0.2f).SetEase(Ease.OutQuad);
-        }
+        SetAlpha(1f);
+        flashTween = mat.DOFade(0f, 0.2f).SetEase(Ease.OutQuad);
     }
 
     private void SetAlpha(float alpha)

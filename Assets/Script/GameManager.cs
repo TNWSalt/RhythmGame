@@ -8,8 +8,7 @@ public class GameManager : MonoBehaviour
     public static GameManager GetInstance() { return instance; }
 
     [SerializeField] private SongData songData;
-    public string songName = "";
-    public AudioClip music;
+    [SerializeField] private int difficulty;
 
     private void Awake()
     {
@@ -24,12 +23,14 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void SetSongData(SongData data) 
+    public void SetSongData(SongData data, int index) 
     {
         songData.name = data.name;
         songData.music = data.music;
-        songData.musicChart = data.musicChart;
+        songData.difficultyDatas = data.difficultyDatas;
+        difficulty = index;
     }
 
     public SongData GetSongData() { return songData; }
+    public int GetDifficulty() { return difficulty; }
 }
