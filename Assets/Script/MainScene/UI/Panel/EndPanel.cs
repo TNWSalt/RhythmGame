@@ -20,6 +20,6 @@ public class EndPanel : BasePanel
 
 	public void ClickButton() 
 	{
-		SceneController.GetInstance().LoadScene(1);
+		SceneController.GetInstance().LoadScene("SelectMusicScene");
 	}
 }

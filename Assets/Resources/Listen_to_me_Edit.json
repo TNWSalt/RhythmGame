@@ -57,7 +57,7 @@
       "LPB": 4,
       "num": 62,
       "block": 1,
-      "type": 1,
+      "type": 3,
       "notes": []
     },
     {
@@ -107,7 +107,7 @@
       "LPB": 4,
       "num": 90,
       "block": 1,
-      "type": 1,
+      "type": 3,
       "notes": []
     },
     {
@@ -142,7 +142,7 @@
       "LPB": 4,
       "num": 100,
       "block": 2,
-      "type": 1,
+      "type": 3,
       "notes": []
     },
     {
@@ -214,7 +214,7 @@
       "LPB": 4,
       "num": 152,
       "block": 0,
-      "type": 1,
+      "type": 3,
       "notes": []
     },
     {
@@ -306,7 +306,7 @@
       "LPB": 4,
       "num": 200,
       "block": 3,
-      "type": 1,
+      "type": 3,
       "notes": []
     },
     {

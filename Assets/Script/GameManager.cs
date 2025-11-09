@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
     public static GameManager GetInstance() { return instance; }
 
     [SerializeField] private SongData songData;
-    [SerializeField] private int difficulty;
+    public int difficulty { get; private set; } = 0;
 
     private void Awake()
     {
@@ -21,6 +21,9 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        Application.targetFrameRate = 60;  // 鎖定 60 FPS
+        QualitySettings.vSyncCount = 0;    // 關閉 VSync，讓 targetFrameRate 生效
     }
 
     public void SetSongData(SongData data, int index) 
@@ -32,5 +35,4 @@ public class GameManager : MonoBehaviour
     }
 
     public SongData GetSongData() { return songData; }
-    public int GetDifficulty() { return difficulty; }
 }

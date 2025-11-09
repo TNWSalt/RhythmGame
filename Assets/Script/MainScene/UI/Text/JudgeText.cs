@@ -11,6 +11,7 @@ public class JudgeText : ObjectPool
 
 	void Start()
     {
+        text.raycastTarget = false;
         SetText(defaultTextMessge);
         //text = GetComponentInChildren<TextMeshProUGUI>();
         transform.localScale = Vector3.one * 0.1f;

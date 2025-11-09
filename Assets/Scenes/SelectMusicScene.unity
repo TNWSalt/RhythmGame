@@ -3114,7 +3114,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   content: {fileID: 351020961}
-  currentPosIndex: 0
 --- !u!1 &1586328353
 GameObject:
   m_ObjectHideFlags: 0
@@ -3875,10 +3874,10 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: ead6e88ab8383f845a82e752bed904eb, type: 3}
     description: "You Better Listen To Me.\r\n\u7D66\u6211\u807D\u597D\u3002"
     difficultyDatas:
-    - diff: 5
-      chart: {fileID: 4900000, guid: 11178effdb986e8419ca643b06043e58, type: 3}
-    - diff: 10
+    - diff: 1
       chart: {fileID: 4900000, guid: ef413fd968eea5349b32e5d98a869267, type: 3}
+    - diff: 2
+      chart: {fileID: 4900000, guid: db89df6bb4f9e3d43a0445046ea3b3a5, type: 3}
   - name: "\u5FC3\u8A0A"
     vocal: 
     music: {fileID: 0}

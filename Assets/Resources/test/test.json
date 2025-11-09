@@ -1,1 +1,104 @@
-﻿{"name":"Listen to me - 煌Kirali【Official Music Video】 [mae91zqZT-E]","maxBlock":5,"BPM":120,"offset":0,"notes":[{"LPB":4,"num":58,"block":0,"type":1,"notes":[]},{"LPB":4,"num":60,"block":3,"type":1,"notes":[]},{"LPB":4,"num":61,"block":0,"type":1,"notes":[]},{"LPB":4,"num":64,"block":1,"type":1,"notes":[]},{"LPB":4,"num":66,"block":2,"type":1,"notes":[]},{"LPB":4,"num":72,"block":0,"type":1,"notes":[]},{"LPB":4,"num":72,"block":2,"type":1,"notes":[]},{"LPB":4,"num":78,"block":0,"type":1,"notes":[]},{"LPB":4,"num":82,"block":3,"type":1,"notes":[]},{"LPB":4,"num":84,"block":1,"type":1,"notes":[]},{"LPB":4,"num":84,"block":2,"type":1,"notes":[]},{"LPB":4,"num":87,"block":1,"type":1,"notes":[]}]}
+﻿{
+	"name": "Listen to me - 煌Kirali【Official Music Video】 [mae91zqZT-E]",
+	"maxBlock": 5,
+	"BPM": 120,
+	"offset": 0,
+	"notes": [
+		{
+			"LPB": 4,
+			"num": 58,
+			"block": 0,
+			"type": 3,
+			"notes": [
+			]
+		},
+		{
+			"LPB": 4,
+			"num": 60,
+			"block": 3,
+			"type": 3,
+			"notes": [
+			]
+		},
+		{
+			"LPB": 4,
+			"num": 61,
+			"block": 0,
+			"type": 3,
+			"notes": [
+			]
+		},
+		{
+			"LPB": 4,
+			"num": 64,
+			"block": 1,
+			"type": 3,
+			"notes": [
+			]
+		},
+		{
+			"LPB": 4,
+			"num": 66,
+			"block": 2,
+			"type": 3,
+			"notes": [
+			]
+		},
+		{
+			"LPB": 4,
+			"num": 72,
+			"block": 0,
+			"type": 3,
+			"notes": [
+			]
+		},
+		{
+			"LPB": 4,
+			"num": 72,
+			"block": 2,
+			"type": 3,
+			"notes": [
+			]
+		},
+		{
+			"LPB": 4,
+			"num": 78,
+			"block": 0,
+			"type": 3,
+			"notes": [
+			]
+		},
+		{
+			"LPB": 4,
+			"num": 82,
+			"block": 3,
+			"type": 3,
+			"notes": [
+			]
+		},
+		{
+			"LPB": 4,
+			"num": 84,
+			"block": 1,
+			"type": 3,
+			"notes": [
+			]
+		},
+		{
+			"LPB": 4,
+			"num": 84,
+			"block": 2,
+			"type": 3,
+			"notes": [
+			]
+		},
+		{
+			"LPB": 4,
+			"num": 87,
+			"block": 1,
+			"type": 3,
+			"notes": [
+			]
+		}
+	]
+}

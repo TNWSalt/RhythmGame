@@ -1,1 +1,24 @@
-﻿{"name":"Listen to me - 煌Kirali【Official Music Video】 [mae91zqZT-E]","maxBlock":5,"BPM":120,"offset":0,"notes":[{"LPB":4,"num":58,"block":3,"type":2,"notes":[{"LPB":4,"num":80,"block":3,"type":2,"notes":[]}]}]}
+﻿{
+	"name": "Listen to me - 煌Kirali【Official Music Video】 [mae91zqZT-E]",
+	"maxBlock": 5,
+	"BPM": 120,
+	"offset": 0,
+	"notes": [
+		{
+			"LPB": 4,
+			"num": 38,
+			"block": 3,
+			"type": 2,
+			"notes": [
+				{
+					"LPB": 4,
+					"num": 70,
+					"block": 3,
+					"type": 2,
+					"notes": [
+					]
+				}
+			]
+		}
+	]
+}

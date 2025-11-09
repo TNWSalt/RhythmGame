@@ -35,19 +35,20 @@ public class NoteSpawner : MonoBehaviour
     public static NoteSpawner instance;
     public static NoteSpawner GetInstance() { return instance; }
 
-    [SerializeField] private string songName;// 歌曲名稱
-    [SerializeField] private int noteNum;// Note 總數    
-    [SerializeField] private float notesSpeed;// Note 的移動速度
+    [SerializeField] private string songName;
+    [SerializeField] private int noteNum;    
+    [SerializeField] private float notesSpeed;
     [SerializeField] private float spawnLeadTime = 2f;
+    [SerializeField] private TextAsset testChart;
 
     [Space(10)]
-    public List<int> LaneNum = new List<int>();//每個 Note 的軌道編號    
-    public List<int> NoteType = new List<int>();//每個 Note 的種類   
-    public List<float> NotesTime = new List<float>(); // 每個 Note 與判定線重合的時間（秒）    
-    public List<GameObject> NotesObj = new List<GameObject>();//用來儲存實體化出來的 Note 物件                                                                  
+    [Header("Note的軌道編號")] public List<int> LaneNum = new List<int>();
+    [Header("Note的種類 ")] public List<int> NoteType = new List<int>();
+    [Header("判定線重合的時間")] public List<float> NotesTime = new List<float>();    
+    [Header("生成的Note")] public List<GameObject> NotesObj = new List<GameObject>();                                                                 
     
     [Header("Prefab")]
-    [SerializeField] private GameObject noteObj;// 用來放 Note 的 Prefab（預製物）
+    [SerializeField] private GameObject noteObj;
     [SerializeField] private GameObject holdNoteObj;
     [SerializeField] private GameObject swipeNotePrefab;
 
@@ -74,11 +75,11 @@ public class NoteSpawner : MonoBehaviour
         objectPool.CreatePool("SwipeNote", swipeNotePrefab, 10);
 
         noteNum = 0;
-        if (gameManager.GetSongData() != null) 
+        if (gameManager.GetSongData().difficultyDatas.Count != 0) 
         { 
-            Load(gameManager.GetSongData().difficultyDatas[gameManager.GetDifficulty()].chart);
+            Load(gameManager.GetSongData().difficultyDatas[gameManager.difficulty].chart);
         }
-        else { Load(songName); }
+        else { Load(testChart); }
         isPlaying = true;
         currentTime = 0;
         NotesTime.Clear();
@@ -210,24 +211,18 @@ public class NoteSpawner : MonoBehaviour
         float z = spawnLeadTime * notesSpeed;
         if (time <= spawnLeadTime) { z = time * notesSpeed; }
 
-        // 根據 type 生成不同物件
-        string prefabToSpawn = "Note";
-        switch (note.type)
+;
+        string prefabToSpawn = note.type switch
         {
-            case 1:
-                prefabToSpawn = "Note";
-                break;
+            1 => "Note",
+            2 => "HoldNote",
+            3 or 4 or 5 => "SwipeNote",
+            _ => "Note"
+        };
 
-            case 2:
-                prefabToSpawn = "HoldNote";
-                break;
-            case 3:
-                prefabToSpawn = "SwipeNote";
-                break;
-        }
-        var noteScript = objectPool.SpwanFromPool(prefabToSpawn, new Vector3(note.block - 1.5f, 0.55f, z), Quaternion.identity);
-        NotesObj.Add(noteScript);
-        noteScript.GetComponent<Note>().InitNote(notesSpeed, time, note.block);
+        var spawnNote = objectPool.SpwanFromPool(prefabToSpawn, new Vector3(note.block - 1.5f, 0.55f, z), Quaternion.identity);
+        NotesObj.Add(spawnNote);
+        spawnNote.GetComponent<Note>().InitNote(notesSpeed, time, note.block);
 
         //noteNum++;
 
@@ -246,10 +241,19 @@ public class NoteSpawner : MonoBehaviour
             NotesObj.Add(tailScript);
 
             tailScript.GetComponent<Note>().InitNote(notesSpeed, tailTime, tail.block);
-            noteScript.GetComponent<HoldNote>().SetTail(tailScript.transform);
+            spawnNote.GetComponent<HoldNote>().SetTail(tailScript.transform);
         }
 
-        if(note.type == 3) { }
+        if (note.type >= 3)
+        {
+            SwipeNote swipeNote = spawnNote.GetComponent<SwipeNote>();
+            SwipeNoteType type = SwipeNoteType.Any;
+
+            if (note.type == 4) { type = SwipeNoteType.Left; }
+            else if (note.type == 5) { type = SwipeNoteType.Right; }
+
+            swipeNote.Initialize(notesSpeed, time, note.block, type);
+        }
     }
 
     public float GetNoteSpeed() 
