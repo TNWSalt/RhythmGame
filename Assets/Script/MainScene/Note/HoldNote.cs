@@ -32,7 +32,7 @@ public class HoldNote : Note
 			transform.position -= transform.forward * Time.deltaTime * noteSpeed;
 			if (isHead)
 			{
-				if (Mathf.Abs(judge.timer - noteTime) <= .2f && !added)
+				if (Mathf.Abs(judge.timer - noteTime) <= PendingRegistrationWindow && !added)
 				{
 					AddToPendingNotes();
 				}

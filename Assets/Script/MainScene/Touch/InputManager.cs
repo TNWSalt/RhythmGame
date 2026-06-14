@@ -97,6 +97,7 @@ public class InputManager : MonoBehaviour
         startHolding[index] = true;
         isHolding[index] = false;
 
+        if (judge == null) { Debug.LogError("Judge is NULL!"); return; }
         judge.JudgementNote(index, true);
     }
 
@@ -113,6 +114,7 @@ public class InputManager : MonoBehaviour
         isKeyboardHolding[index] = false;
         startHolding[index] = false;
 
+        if (judge == null) { Debug.LogError("Judge is NULL!"); return; }
         judge.JudgementNote(index, false);
     }
 
@@ -145,6 +147,10 @@ public class InputManager : MonoBehaviour
         {
             Debug.Log("InputManager: Swipe Ignored (Too Short)");
             judge.JudgementNote(index, false);
+            startHolding[index] = false;
+            isHolding[index] = false;
+            holdTime[index] = 0f;
+            isKeyboardHolding[index] = false;
             return;
         }
 

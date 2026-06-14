@@ -3871,25 +3871,23 @@ MonoBehaviour:
   - name: Listen to me
     vocal: "\u714CKirali"
     music: {fileID: 8300000, guid: eb053cb40f2e98e41b390fca3ae08adc, type: 3}
-    sprite: {fileID: 21300000, guid: ead6e88ab8383f845a82e752bed904eb, type: 3}
+    sprite: {fileID: 0}
     description: "You Better Listen To Me.\r\n\u7D66\u6211\u807D\u597D\u3002"
     difficultyDatas:
     - diff: 1
       chart: {fileID: 4900000, guid: ef413fd968eea5349b32e5d98a869267, type: 3}
     - diff: 2
       chart: {fileID: 4900000, guid: db89df6bb4f9e3d43a0445046ea3b3a5, type: 3}
-  - name: "\u5FC3\u8A0A"
+  - name: Test
     vocal: 
     music: {fileID: 0}
-    sprite: {fileID: 21300000, guid: 10110705033f0c845948fc400c2d825e, type: 3}
-    description: 
-    difficultyDatas: []
-  - name: "\u7166\u65E5"
-    vocal: "\u6FAARei"
-    music: {fileID: 0}
-    sprite: {fileID: 21300000, guid: 05da2d5cff46a4c439ffe99d9907a882, type: 3}
-    description: 
-    difficultyDatas: []
+    sprite: {fileID: 0}
+    description: "\u6E2C\u8A66\u6309\u9375"
+    difficultyDatas:
+    - diff: 0
+      chart: {fileID: 4900000, guid: 370307ba355ce48468a4d444964886fe, type: 3}
+    - diff: 0
+      chart: {fileID: 4900000, guid: fcf6dbfa98a569d42af4427c86c483b4, type: 3}
   songDataPrefab: {fileID: 5274071891333261806, guid: 6e98f87e4903f124982684f41a3191f4, type: 3}
   nameText: {fileID: 414975133}
   content: {fileID: 351020961}

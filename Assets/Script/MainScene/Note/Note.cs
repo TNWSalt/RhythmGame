@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Note : MonoBehaviour, IObjectPool
 {
+	protected const float PendingRegistrationWindow = .3f;
+
 	[SerializeField] protected string objectPoolName;
 	[SerializeField] protected float noteSpeed = .1f;
 	public float noteTime { get; protected set; }
@@ -15,6 +17,7 @@ public class Note : MonoBehaviour, IObjectPool
 
 	public int pendingJudgeResult { get; protected set; }
 	protected bool isJudged = false;
+	public bool IsJudged => isJudged;
 
 	public virtual void OnEnable()
 	{
@@ -26,14 +29,13 @@ public class Note : MonoBehaviour, IObjectPool
 		pendingJudgeResult = -1;
 	}
 
-	// (修改) Update 只負責移動和 "添加"
 	public virtual void Update()
 	{
 		if (PauseManager.GetInstance().isPause) { return; }
 
 		transform.position -= transform.forward * Time.deltaTime * noteSpeed;
 
-		if (Mathf.Abs(judge.timer - noteTime) <= .2f && !added)
+		if (Mathf.Abs(judge.timer - noteTime) <= PendingRegistrationWindow && !added)
 		{
 			AddToPendingNotes();
 		}

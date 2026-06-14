@@ -74,6 +74,8 @@ public class SongSelectMenu : MonoBehaviour
 
     public void OpenDiffcultySelection(int index) 
     {
+        //if (index == 0) { Debug.LogWarning("Index is 0"); return; }
+
         difficulty.gameObject.SetActive(true);
         difficulty.Init(GetData(index));
     }

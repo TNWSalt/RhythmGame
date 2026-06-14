@@ -131,6 +131,7 @@ public class DifficultySelection : MonoBehaviour
 	{
 		GameManager.GetInstance().SetSongData(selectedData, (int)currentDifficulty);
 		SceneController.GetInstance().LoadNextScene();
+		//SceneController.GetInstance().LoadScene(2);
 	}
 
 	private void OnDifficultySelected(int index)

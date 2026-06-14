@@ -53,7 +53,7 @@ public class NoteSpawner : MonoBehaviour
     [SerializeField] private GameObject swipeNotePrefab;
 
     private float currentTime;
-    private bool isPlaying;
+    //public bool isPlaying { private set; get; }
     [SerializeField] private List<NoteEvent> upcomingNotes = new List<NoteEvent>();
     private Data inputJson;
     private GameManager gameManager;
@@ -80,7 +80,7 @@ public class NoteSpawner : MonoBehaviour
             Load(gameManager.GetSongData().difficultyDatas[gameManager.difficulty].chart);
         }
         else { Load(testChart); }
-        isPlaying = true;
+        //isPlaying = true;
         currentTime = 0;
         NotesTime.Clear();
         LaneNum.Clear();
@@ -90,7 +90,8 @@ public class NoteSpawner : MonoBehaviour
 
 	private void Update()
 	{
-        if (!isPlaying) { return; }
+        if (!Judge.GetInstance().isPlaying) { return; }
+        if (PauseManager.GetInstance().isPause) { return; }
 
         currentTime = judge.timer;
 

@@ -1,161 +1,3 @@
-/*using System;
-using System.Collections.Generic;
-using UnityEngine;
-
-[Serializable]
-public class JudgeTxetMessage
-{
-public string judgeText;
-public Color textColor;
-}
-
-public class Judge : MonoBehaviour
-{
-    public static Judge instance;
-    public static Judge GetInstance() { return instance; }
-
-    [Header("Combo")]
-    [SerializeField] private int combo;
-    public int maxCombo { get; private set; }
-    [SerializeField] private int[] resultCount = new int[4];
-
-    [Header("分數")]
-    [SerializeField] private int totalScore;
-    [SerializeField] private int currentScore;
-    public int finalScore { get; private set; }
-  
-    [SerializeField] JudgeTxetMessage[] judgeMessage;
-    [SerializeField] GameObject messagePrefab;    
-    [SerializeField] private List<Note> pendingNotes;
-    public float timer { get; private set; }
-
-    private Note[] pendingPressNote = new Note[4];
-
-    private ObjectPoolManager poolManager;
-    private GameManager gameManager;
-
-    private void Awake()
-	{
-        if (instance != null) { return; }
-        instance = this;
-	}
-
-	private void Start()
-    {
-        poolManager = ObjectPoolManager.GetInstance();
-        gameManager = GameManager.GetInstance();
-        finalScore = 0;
-        currentScore = 0;
-        totalScore = 0;
-        timer = 0;
-    }
-
-    void Update()
-    {
-        if (PauseManager.GetInstance().isPause) { return; }
-        timer += Time.deltaTime;        
-    }
-    
-    //  顯示對應的判定 UI（Perfect / Great / Bad / Miss）
-    public void Message(int judgeResult, int noteLaneNum)
-    {
-        Debug.Log(judgeResult);
-        var text = poolManager.SpwanFromPool(messagePrefab.name,
-            new Vector3(noteLaneNum - 1.5f, 0.76f, 0.15f),
-            Quaternion.Euler(45, 0, 0)).GetComponent<JudgeText>();
-        text.SetText(judgeMessage[judgeResult]);
-    }
-
-    public void AddPendingNotes(Note note)
-    {
-        pendingNotes.Add(note);
-    }
-
-    public void RemovePendingNotes(Note note)
-    {
-        pendingNotes.Remove(note);
-    }
-
-    public void JudgementNote(int laneNum, bool isHolding) 
-    {
-        for (int i = pendingNotes.Count - 1; i >= 0; i--)
-        {
-            var note = pendingNotes[i];
-
-            if (note.noteLaneNum != laneNum) { continue; }
-
-            int result = note.Judgement(timer, isHolding);
-            Debug.Log(result);
-            if (result == 4) { continue; }
-            AddResult(result);
-            CalculateScore(result);
-            Message(result, note.noteLaneNum);
-            CalculateCombo(result);
-
-            // 如果音符被判定完（如 PERFECT, MISS），就移出
-            if (note.isFinished)
-            {
-                pendingNotes.RemoveAt(i);
-            }
-        }
-    }
-
-    public void CalculateCombo(int result) 
-    {
-        if (result >= 2) 
-        {
-            combo = 0;           
-        }
-        else
-        {
-            combo++;            
-            if (combo >= maxCombo) { maxCombo = combo; }
-        }
-        FindObjectOfType<ComboText>().SetCombo(combo);
-    }
-
-    public void AddResult(int result)
-    {
-        if (result >= 0 && result < resultCount.Length)
-        {
-            resultCount[result]++;
-            Debug.Log($"Result {result} 次數：{resultCount[result]}");
-        }
-        else
-        {
-            Debug.LogWarning($"結果 {result} 超出範圍（0~{resultCount.Length - 1}）");
-        }
-    }
-
-    public int[] GetJudgeResult() { return resultCount; }
-
-    public void CalculateScore(int result)
-    {
-        if (result == 0)
-        {
-            currentScore += 3;
-        }
-        else if (result == 1)
-        {
-            currentScore += 2;
-        }
-        else if (result == 2)
-        {
-            currentScore++;
-        }
-
-        float s = (currentScore / (float)totalScore) * 1000000;
-        finalScore = Mathf.RoundToInt(s);
-        FindObjectOfType<ScoreCalculation>().SetText(finalScore.ToString());
-        //scoreText.text = score.ToString();
-    }
-
-    public void CalculateTotalScore(int noteNum)
-    {
-        totalScore = noteNum * 3;
-    }
-}*/
-
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -174,8 +16,9 @@ public class Judge : MonoBehaviour
 
     [Header("Combo")]
     [SerializeField] private int combo;
+    private ComboText comboText;
     public int maxCombo { get; private set; }
-    [SerializeField] private int[] resultCount = new int[4];
+    public int[] resultCount { get; private set; } = new int[4];
 
     [Header("分數")]
     [SerializeField] private int totalScore;
@@ -184,14 +27,16 @@ public class Judge : MonoBehaviour
 
     [SerializeField] JudgeTxetMessage[] judgeMessage;
     [SerializeField] GameObject messagePrefab;
-    [SerializeField] private List<Note> pendingNotes;
+    [SerializeField] JudgeText judgeResultMessage;
+   [SerializeField] private List<Note> pendingNotes;
     public float timer { get; private set; }
+    public bool isPlaying { get; private set; }
+    public void SetIsPlaying(bool value) { isPlaying = value;}
 
     // (你已有的變數，用來儲存 "預判" 的 Note)
     [SerializeField] private Note[] pendingPressNote = new Note[4];
 
     private ObjectPoolManager poolManager;
-    private GameManager gameManager;
 
     // (Awake, Start 保持不變)
     #region Unchanged Methods
@@ -204,21 +49,25 @@ public class Judge : MonoBehaviour
     private void Start()
     {
         poolManager = ObjectPoolManager.GetInstance();
-        gameManager = GameManager.GetInstance();
         finalScore = 0;
         currentScore = 0;
         totalScore = 0;
         timer = 0;
+        isPlaying = false;
 
         // (新) 初始化 pendingPressNote
         pendingPressNote = new Note[4];
+        comboText = FindObjectOfType<ComboText>();
+        //MusicManager.GetInstance().PlayMusic(bgm);
     }
     #endregion
 
     void Update()
     {
         if (PauseManager.GetInstance().isPause) { return; }
-        timer += Time.deltaTime;
+        if (!isPlaying) { return; }
+        var musicManager = MusicManager.GetInstance();
+        timer = musicManager != null && musicManager.HasClip ? musicManager.PlaybackTime : timer + Time.deltaTime;
 
         for (int i = pendingNotes.Count - 1; i >= 0; i--)
         {
@@ -228,8 +77,8 @@ public class Judge : MonoBehaviour
 
             // (你需要 Note.cs 有 noteTime 屬性)
             // (我們假設 0.2f 是你的 Miss 判定點)
-            float missTimeThreshold = 0.2f; 
-            
+            float missTimeThreshold = 0.2f;
+
             // 檢查是否超時
             if (note.noteTime + missTimeThreshold <= timer)
             {
@@ -238,14 +87,19 @@ public class Judge : MonoBehaviour
                     // Note 已經被 JudgementNote(false) 處理並銷毀
                     // 它不應該在這裡，但我們還是安全地移除它
                     pendingNotes.RemoveAt(i);
-                    continue; 
+                    continue;
+                }
+
+                if (note.IsJudged)
+                {
+                    continue;
                 }
 
                 // 檢查 Note 是否正在被按住 (HoldNote)
                 if (note is HoldNote hn && hn.isHolding)
                 {
                     // 正在長按，不要判定它 Miss
-                    continue; 
+                    continue;
                 }
 
                 // --- 如果執行到這裡，表示 Note 確實 Miss 了 ---
@@ -293,7 +147,7 @@ public class Judge : MonoBehaviour
     {
         Debug.Log(judgeResult);
         var text = poolManager.SpwanFromPool(messagePrefab.name,
-            new Vector3(noteLaneNum - 1.5f, 1f, 0.15f),
+            new Vector3(0, 1f, .75f),
             Quaternion.Euler(45, 0, 0)).GetComponent<JudgeText>();
         text.SetText(judgeMessage[judgeResult]);
     }
@@ -319,7 +173,7 @@ public class Judge : MonoBehaviour
             combo++;
             if (combo >= maxCombo) { maxCombo = combo; }
         }
-        FindObjectOfType<ComboText>().SetCombo(combo);
+        comboText.SetCombo(combo);
     }
 
     public void AddResult(int result)
@@ -361,44 +215,6 @@ public class Judge : MonoBehaviour
         totalScore = noteNum * 3;
     }
 
-    /// <summary>
-    /// 撤銷分數 (給 CancelPress 使用)
-    /// </summary>
-    public void RemoveResult(int result)
-    {
-        if (result >= 0 && result < resultCount.Length)
-        {
-            resultCount[result]--;
-        }
-    }
-
-    /// <summary>
-    /// 撤銷分數 (給 CancelPress 使用)
-    /// </summary>
-    public void RemoveScore(int result)
-    {
-        if (result == 0) { currentScore -= 3; }
-        else if (result == 1) { currentScore -= 2; }
-        else if (result == 2) { currentScore -= 1; }
-
-        float s = (currentScore / (float)totalScore) * 1000000;
-        finalScore = Mathf.RoundToInt(s);
-        FindObjectOfType<ScoreCalculation>().SetText(finalScore.ToString());
-    }
-
-    /// <summary>
-    /// 撤銷 Combo (給 CancelPress 使用)
-    /// </summary>
-    public void RemoveCombo()
-    {
-        combo--;
-        if (combo < 0) combo = 0;
-        FindObjectOfType<ComboText>().SetCombo(combo);
-    }
-
-    /// <summary>
-    /// 處理 Press 和 Release 事件
-    /// </summary>
     public void JudgementNote(int laneNum, bool isHolding)
     {
         if (isHolding) // --- PRESS (按下) ---
@@ -419,7 +235,7 @@ public class Judge : MonoBehaviour
             {
                 if (!(noteToJudge is HoldNote)) //不存HoldNote
                 {
-                    
+
                 }
                 pendingPressNote[laneNum] = noteToJudge;
 
@@ -528,9 +344,9 @@ public class Judge : MonoBehaviour
 
             if (resultToCancel >= 0 && resultToCancel <= 2)
             {
-                RemoveResult(resultToCancel);
-                RemoveScore(resultToCancel);
-                RemoveCombo();
+                //RemoveResult(resultToCancel);
+                //RemoveScore(resultToCancel);
+                //RemoveCombo();
             }
 
             // 4. 清除
@@ -574,4 +390,11 @@ public class Judge : MonoBehaviour
             // 這樣尾端就會被判定，並回收 HoldNote
         }
     }
+
+    /*private void MusicDone()
+    {
+        //FindObjectOfType<TouchLaneGroup>().
+        //UIManager.GetInstance().ShowPanel("EndPanel");
+        Debug.Log("音樂播放完了！");
+    }*/
 }

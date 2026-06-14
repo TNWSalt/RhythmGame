@@ -10,7 +10,7 @@ public class PauseManager : MonoBehaviour
     public static PauseManager GetInstance() { return instance; }
 
     public bool isPause { get; private set; }
-    
+
 	[SerializeField] private TextMeshProUGUI countdownText;
 
 	private void Awake()
@@ -23,20 +23,20 @@ public class PauseManager : MonoBehaviour
 	{
 		if (isPause) { return; }
 
-		if (Input.GetKeyDown(KeyCode.Escape)) 
+		if (Input.GetKeyDown(KeyCode.Escape))
 		{
-			Pause();			
+			Pause();
 		}
 	}
 
-	public void Continue() 
+	public void Continue()
 	{
 		var text = Instantiate(countdownText, FindObjectOfType<UIManagerHandler>().gameObject.transform);
 
 		StartCoroutine(ShowCountdownText(text));
 	}
 
-	private IEnumerator ShowCountdownText(TextMeshProUGUI text) 
+	private IEnumerator ShowCountdownText(TextMeshProUGUI text)
 	{
 		for (int i = 3; i > 0; i--)
 		{
@@ -54,10 +54,19 @@ public class PauseManager : MonoBehaviour
 		Destroy(text);
 	}
 
-	public void Pause(bool pause = true) 
-	{ 
+	public void Pause(bool pause = true)
+	{
 		isPause = pause;
 
-		if (isPause) { UIManager.GetInstance().ShowPanel("PausePanel"); }		
+        var musicManager = MusicManager.GetInstance();
+        if (musicManager != null)
+        {
+            if (isPause) { musicManager.PauseMusic(); }
+            else { musicManager.ResumeMusic(); }
+        }
+		if (isPause)
+		{
+			UIManager.GetInstance().ShowPanel("PausePanel");
+		}
 	}
 }
